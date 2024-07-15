@@ -3,7 +3,7 @@ lang = nil
 
 CreateThread(function()
     while Config == nil do
-        TriggerServerEvent("Prefech:JD_logsV3:GetConfigSettings") --[[ On client load this will make a request to the server to pull some config data. ]]
+        TriggerServerEvent("fm-logs:server:getConfigSettings") --[[ On client load this will make a request to the server to pull some config data. ]]
         Wait(0)
     end
     while lang == nil do
@@ -16,8 +16,8 @@ CreateThread(function()
     end
 end)
 
-RegisterNetEvent("Prefech:JD_logsV3:SendConfigSettings")
-AddEventHandler("Prefech:JD_logsV3:SendConfigSettings", function(data)
+RegisterNetEvent("fm-logs:client:SendConfigSettings")
+AddEventHandler("fm-logs:client:SendConfigSettings", function(data)
     	Config = data --[[ Just the config data for weapon logs will be pulled. ]]
         if lang == nil then
             local langFile = LoadResourceFile(GetCurrentResourceName(), "lang/" .. Config.language .. ".json")
@@ -26,8 +26,8 @@ AddEventHandler("Prefech:JD_logsV3:SendConfigSettings", function(data)
 end)
 
 --[[ Screenshot request on client. ]]
-RegisterNetEvent('Prefech:JD_logsV3:ClientCreateScreenshot')
-AddEventHandler('Prefech:JD_logsV3:ClientCreateScreenshot', function(args)
+RegisterNetEvent('fm-logs:client:getScreenshot')
+AddEventHandler('fm-logs:client:getScreenshot', function(args)
     exports['screenshot-basic']:requestScreenshotUpload('https://discord.com/api/webhooks/'..args.url, 'files[]', function(data)
         local resp = json.decode(data)
 		if resp.attachments then
@@ -39,7 +39,7 @@ AddEventHandler('Prefech:JD_logsV3:ClientCreateScreenshot', function(args)
                 args.imageUrl_2 = resp.attachments[1].url
                 args.screenshot_2 = false
             end
-            TriggerServerEvent('Prefech:JD_logsV3:ScreenshotCB', args)
+            TriggerServerEvent('fm-logs:server:screenshotCallback', args)
         end
     end)
 end)
@@ -57,11 +57,11 @@ exports('discord', function(msg, player_1, player_2, color, channel) --[[ This i
 	if player_2 ~= 0 then
 		args['player_2_id'] = player_2
 	end
-	TriggerServerEvent('Prefech:JD_logsV3:ClientDiscord', args)
+	TriggerServerEvent('fm-logs:server:sendLog', args)
 end)
 
 exports('createLog', function(args) --[[ and this is the new export with all new stuff. ]]
-	TriggerServerEvent('Prefech:JD_logsV3:ClientDiscord', args)
+	TriggerServerEvent('fm-logs:server:sendLog', args)
 end)
 
 --[[ Shooting logs. ]]
@@ -87,17 +87,17 @@ CreateThread(function()
             end
             if fireCount ~= 0 and timeout == 0 then --[[ When the timer is 0 and the weapon fire count is higher than 0 we will make a log. ]]
                 if not ClientTables.WeaponNames[tostring(fireWeapon)] then --[[ Weapon info not found. creating log without weapon info. ]]
-                    TriggerServerEvent('Prefech:JD_logsV3:playerShotWeapon', lang.shooting.undefined)
+                    TriggerServerEvent('fm-logs:server:PlayerShotWeapon', lang.shooting.undefined)
                     return
                 end
                 isLoggedWeapon = true
                 for k,v in pairs(Config.WeaponsNotLogged) do --[[ Cheking if we need to make a log for the weapon that was shot. ]]
-                    if fireWeapon == GetHashKey(v) then
+                    if fireWeapon == joaat(v) then
                         isLoggedWeapon = false
                     end
                 end
                 if isLoggedWeapon then --[[ Sending the log with weapon info. ]]
-                    TriggerServerEvent('Prefech:JD_logsV3:playerShotWeapon', ClientTables.WeaponNames[tostring(fireWeapon)], fireCount)
+                    TriggerServerEvent('fm-logs:server:PlayerShotWeapon', ClientTables.WeaponNames[tostring(fireWeapon)], fireCount)
                 end
                 fireCount = 0
             end
@@ -115,7 +115,7 @@ CreateThread(function()
 		if health < GetEntityHealth(PlayerPedId()) then health = GetEntityHealth(PlayerPedId()) end -- Just to make sure we don't log when healt gets added
 		if health > GetEntityHealth(PlayerPedId()) then
 			newHealth = GetEntityHealth(PlayerPedId())
-			TriggerServerEvent('Prefech:JD_logsV3:PlayerDamage', math.floor((health - newHealth) / 2))
+			TriggerServerEvent('fm-logs:server:PlayerDamage', math.floor((health - newHealth) / 2))
 			health = newHealth
 			Wait(1000)
 		else
@@ -223,7 +223,7 @@ CreateThread(function()
                         DeathReason = lang.death.player.other:gsub("{name}", GetPlayerName(PlayerId())):gsub("{killer}", GetPlayerName(killer))
                     end
 				end
-				TriggerServerEvent('Prefech:JD_logsV3:playerDied', { ['rsn'] = DeathReason, ['kil'] = GetPlayerServerId(killer) })
+				TriggerServerEvent('fm-logs:server:PlayerDied', { ['rsn'] = DeathReason, ['kil'] = GetPlayerServerId(killer) })
 			end
 		else
 			Wait(500)

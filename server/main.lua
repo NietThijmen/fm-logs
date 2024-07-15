@@ -11,19 +11,19 @@ local startup = false
 CreateThread(function() --[[ Permissions check for buildin DiscordAcePerms ]]
 	add_principal = true remove_principal = true addd_ace = true remove_ace = true
 	if not IsPrincipalAceAllowed('resource.' .. GetCurrentResourceName(), 'command.add_principal') then
-		print('^1Error:^0 JD_logs needs to have access to ^2add_principal^0 for the discord permissions to work.')
+		print('^1Error:^0 fm-logs needs to have access to ^2add_principal^0 for the discord permissions to work.')
 		add_principal = false
 	end
 	if not IsPrincipalAceAllowed('resource.' .. GetCurrentResourceName(), 'command.remove_principal') then
-		print('^1Error:^0 JD_logs needs to have access to ^2remove_principal^0 for the discord permissions to work.')
+		print('^1Error:^0 fm-logs needs to have access to ^2remove_principal^0 for the discord permissions to work.')
 		remove_principal = false
 	end
 	if not IsPrincipalAceAllowed('resource.' .. GetCurrentResourceName(), 'command.add_ace') then
-		print('^1Error:^0 JD_logs needs to have access to ^2add_ace^0 for the discord permissions to work.')
+		print('^1Error:^0 fm-logs needs to have access to ^2add_ace^0 for the discord permissions to work.')
 		addd_ace = false
 	end
 	if not IsPrincipalAceAllowed('resource.' .. GetCurrentResourceName(), 'command.remove_ace') then
-		print('^1Error:^0 JD_logs needs to have access to ^2remove_ace^0 for the discord permissions to work.')
+		print('^1Error:^0 fm-logs needs to have access to ^2remove_ace^0 for the discord permissions to work.')
 		remove_ace = false
 	end
 	if not add_principal or not remove_principal or not addd_ace or not remove_ace then
@@ -108,13 +108,13 @@ end)
 
 AddEventHandler("playerJoining", function(newID, oldID) --[[ Name Change Logs / Discord Ace Perms. ]]
 	local ids = ServerFunc.ExtractIdentifiers(newID)
-	local oldName = GetResourceKvpString("JD_logs:nameChane:"..ids.license)
+	local oldName = GetResourceKvpString("fm-logs:nameChane:"..ids.license)
 	if oldName == nil then
-		SetResourceKvp("JD_logs:nameChane:"..ids.license, GetPlayerName(newID))
+		SetResourceKvp("fm-logs:nameChane:"..ids.license, GetPlayerName(newID))
 	else
 		if oldName ~= GetPlayerName(newID) then
 			ServerFunc.CreateLog({EmbedMessage = lang.nameChange.msg:gsub("{old_name}", oldName):gsub("{new_name}", GetPlayerName(newID)), player_id = newID, channel = 'nameChange'})
-			SetResourceKvp("JD_logs:nameChane:"..ids.license, GetPlayerName(newID))
+			SetResourceKvp("fm-logs:nameChane:"..ids.license, GetPlayerName(newID))
 			for k,v in pairs(GetPlayers()) do
 				if IsPlayerAceAllowed(v, Config.NameChangePerms) then
 					TriggerClientEvent('chat:addMessage', i, {
@@ -158,8 +158,8 @@ AddEventHandler("playerJoining", function(newID, oldID) --[[ Name Change Logs / 
 	end
 end)
 
-RegisterNetEvent("Prefech:JD_logsV3:GetConfigSettings")
-AddEventHandler("Prefech:JD_logsV3:GetConfigSettings", function()
+RegisterNetEvent("fm-logs:server:getConfigSettings")
+AddEventHandler("fm-logs:server:getConfigSettings", function()
 	if Config ~= nil then
 		data = {
 			weaponLog = Config.weaponLog,
@@ -168,19 +168,19 @@ AddEventHandler("Prefech:JD_logsV3:GetConfigSettings", function()
 			damageLog = Config.damageLog,
 			deathLog = Config.deathLog
 		}
-		TriggerClientEvent("Prefech:JD_logsV3:SendConfigSettings", source, data)
+		TriggerClientEvent("fm-logs:client:SendConfigSettings", source, data)
 	end
 end)
 
-RegisterServerEvent('Prefech:JD_logsV3:playerShotWeapon') --[[ Shooting logs. ]]
-AddEventHandler('Prefech:JD_logsV3:playerShotWeapon', function(weapon, count)
+RegisterServerEvent('fm-logs:server:PlayerShotWeapon') --[[ Shooting logs. ]]
+AddEventHandler('fm-logs:server:PlayerShotWeapon', function(weapon, count)
 	if Config.weaponLog then
 		ServerFunc.CreateLog({EmbedMessage = lang.shooting.msg:gsub("{name}", GetPlayerName(source)):gsub("{weapon}", weapon):gsub("{count}", count), player_id = source, channel = 'shooting'})
     end
 end)
 
-RegisterServerEvent('Prefech:JD_logsV3:playerDied')
-AddEventHandler('Prefech:JD_logsV3:playerDied',function(args)
+RegisterServerEvent('fm-logs:server:PlayerDied')
+AddEventHandler('fm-logs:server:PlayerDied',function(args)
 	if args.kil == 0 then
 		ServerFunc.CreateLog({EmbedMessage = args.rsn, player_id = source, channel = 'death'})
 	else
@@ -188,8 +188,8 @@ AddEventHandler('Prefech:JD_logsV3:playerDied',function(args)
 	end
 end)
 
-RegisterServerEvent('Prefech:JD_logsV3:PlayerDamage') --[[ Damaghe Logs. ]]
-AddEventHandler('Prefech:JD_logsV3:PlayerDamage', function(args)
+RegisterServerEvent('fm-logs:server:PlayerDamage') --[[ Damaghe Logs. ]]
+AddEventHandler('fm-logs:server:PlayerDamage', function(args)
 	if Config.damageLog then
 		iPed = GetPlayerPed(source)
 		cause = GetPedSourceOfDamage(iPed)
@@ -233,8 +233,8 @@ function getPlayerId(ped)
 end
 
 --[[ Export from client side. ]]
-RegisterServerEvent('Prefech:JD_logsV3:ClientDiscord')
-AddEventHandler('Prefech:JD_logsV3:ClientDiscord', function(args)
+RegisterServerEvent('fm-logs:server:sendLog')
+AddEventHandler('fm-logs:server:sendLog', function(args)
 	ServerFunc.CreateLog(args)
 end)
 
@@ -282,58 +282,59 @@ exports('GetPlayers', function(args)
 	return GetPlayers()
 end)
 
-RegisterNetEvent("Prefech:JD_logsV3:ScreenshotCB") --[[ Returning screenshot value. ]]
-AddEventHandler("Prefech:JD_logsV3:ScreenshotCB", function(args)
+RegisterNetEvent("fm-logs:server:screenshotCallback") --[[ Returning screenshot value. ]]
+AddEventHandler("fm-logs:server:screenshotCallback", function(args)
 	ServerFunc.CreateLog(args)
 end)
 
-CreateThread(function() --[[ System Messages. ]]
-    while true do
-        PerformHttpRequest('https://api.prefech.dev/v1/fivem/jdlogs/systemMsg', function(code, res, headers)
-            if code == 200 then
-				local rv = json.decode(res)
-				if rv.item.id then
-					if os.time(os.date("!*t")) - tonumber(rv.item.date) < (7 * 24 * 60 * 60) then
-						if GetResourceKvpString('JD_logs:SystemMessage') ~= rv.item.message then
-							print('^1JD_logs System Message\n^1--------------------^0\n^2'..rv.item.title..'^0\n'..rv.item.message..'\n^1--------------------^0')
-							ServerFunc.CreateLog({ EmbedMessage = '**'..rv.item.title..'**\n'..rv.item.message, channel = 'system'})
-						end
-					end
-					SetResourceKvp("JD_logs:SystemMessageId", ''..rv.item.id..'')
-					SetResourceKvp("JD_logs:SystemMessage", ''..rv.item.message..'')
-				end
-            end
-        end, 'GET', nil, {
-            ['Token'] = 'JD_logsV3',
-			['Last'] = GetResourceKvpString('JD_logs:SystemMessageId')
-        })
-        Wait(15 * 60 * 1000)
-    end
-end)
 
-CreateThread( function() --[[ Version Checker ]]
-	local version = GetResourceMetadata(GetCurrentResourceName(), 'version')
-	SetConvarServerInfo("JD_logs", "V"..version)
-	PerformHttpRequest('https://raw.githubusercontent.com/Prefech/JD_logsV3/master/json/version.json', function(code, res, headers)
-		if code == 200 then
-			local rv = json.decode(res)
-			if tonumber(table.concat(mysplit(rv.version, "."))) > tonumber(table.concat(mysplit(version, "."))) then
-					print(([[^1-------------------------------------------------------
-					JD_logsV3
-UPDATE: %s AVAILABLE
-CHANGELOG: %s
--------------------------------------------------------^0]]):format(rv.version, rv.changelog))
-				ServerFunc.CreateLog({ EmbedMessage = "**JD_logsV3 Update V"..rv.version.."**\nDownload the latest update of JD_logsV3 here:\nhttps://github.com/prefech/JD_logsV3/\n\n**Changelog:**\n"..rv.changelog..'\n\n**How to update?**\n1. Download the latest version.\n2. Replace all files with your old once **EXCEPT THE CONFIG** folder.\n3. run the `!jdlogs setup` command again and you\'re done.', channel = 'system'})
-			end
-		end
-	end, 'GET')
-end)
+-- CreateThread(function() --[[ System Messages. ]]
+--     while true do
+--         PerformHttpRequest('https://api.prefech.dev/v1/fivem/jdlogs/systemMsg', function(code, res, headers)
+--             if code == 200 then
+-- 				local rv = json.decode(res)
+-- 				if rv.item.id then
+-- 					if os.time(os.date("!*t")) - tonumber(rv.item.date) < (7 * 24 * 60 * 60) then
+-- 						if GetResourceKvpString('fm-logs:SystemMessage') ~= rv.item.message then
+-- 							print('^1fm-logs System Message\n^1--------------------^0\n^2'..rv.item.title..'^0\n'..rv.item.message..'\n^1--------------------^0')
+-- 							ServerFunc.CreateLog({ EmbedMessage = '**'..rv.item.title..'**\n'..rv.item.message, channel = 'system'})
+-- 						end
+-- 					end
+-- 					SetResourceKvp("fm-logs:SystemMessageId", ''..rv.item.id..'')
+-- 					SetResourceKvp("fm-logs:SystemMessage", ''..rv.item.message..'')
+-- 				end
+--             end
+--         end, 'GET', nil, {
+--             ['Token'] = 'fm-logsV3',
+-- 			['Last'] = GetResourceKvpString('fm-logs:SystemMessageId')
+--         })
+--         Wait(15 * 60 * 1000)
+--     end
+-- end)
 
---[[
+	-- CreateThread( function() --Version checker
+	-- 	local version = GetResourceMetadata(GetCurrentResourceName(), 'version')
+	-- 	SetConvarServerInfo("fm-logs", "V"..version)
+	-- 	PerformHttpRequest('https://raw.githubusercontent.com/Prefech/fm-logsV3/master/json/version.json', function(code, res, headers)
+	-- 		if code == 200 then
+	-- 			local rv = json.decode(res)
+	-- 			if tonumber(table.concat(mysplit(rv.version, "."))) > tonumber(table.concat(mysplit(version, "."))) then
+	-- 				print(([[^1-------------------------------------------------------
+	-- 				fm-logsV3
+	-- 				UPDATE: %s AVAILABLE
+	-- 				CHANGELOG: %s
+	-- 				-------------------------------------------------------^0]]):format(rv.version, rv.changelog))
+	-- 				ServerFunc.CreateLog({ EmbedMessage = "**fm-logsV3 Update V"..rv.version.."**\nDownload the latest update of fm-logsV3 here:\nhttps://github.com/prefech/fm-logsV3/\n\n**Changelog:**\n"..rv.changelog..'\n\n**How to update?**\n1. Download the latest version.\n2. Replace all files with your old once **EXCEPT THE CONFIG** folder.\n3. run the `!jdlogs setup` command again and you\'re done.', channel = 'system'})
+	-- 			end
+	-- 		end
+	-- 	end, 'GET')
+	-- end)	
+
+	--[[
 
 All options for the export.
 
-exports.JD_logsV3:createLog({
+exports.fm-logsV3:createLog({
     EmbedMessage = "Embed Message", -- The Embed Message you want to show in the export.
     player_id = SERVER_ID_PLAYER_ONE, -- Server id for the first player (Optional)
     player_2_id = SERVER_ID_PLAYER_TWO, -- Server if for the second player (Optional)

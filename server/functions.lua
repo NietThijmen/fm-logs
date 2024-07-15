@@ -4,26 +4,26 @@ ServerFunc.CreateLog = function(data)
 
     if Config ~= nil then
 		if not Config.token or Config.token == "" then
-			return print('^1Error:^0 Issue loading config file. Please follow the installation guild on the docs: https://docs.prefech.com')
+			return print('^1Error:^0 Issue loading config file. Please follow the installation guild on the docs: https://docs.fivemerr.com/')
 		end
 		if not Config.guildId or Config.guildId == "" then
-			return print('^1Error:^0 Issue loading config file. Please follow the installation guild on the docs: https://docs.prefech.com')
+			return print('^1Error:^0 Issue loading config file. Please follow the installation guild on the docs: https://docs.fivemerr.com/')
 		end
 	else
-		return print('^1Error:^0 Issue loading config file. Please follow the installation guild on the docs: https://docs.prefech.com')
+		return print('^1Error:^0 Issue loading config file. Please follow the installation guild on the docs: https://docs.fivemerr.com/')
 	end
 
     if data.screenshot then --[[ this log requires a screenshot to be made so we will transfer to client to grab a screenshot. ]]
         local channelsLoadFile = LoadResourceFile(GetCurrentResourceName(), "./config/channels.json")
         local theFile = json.decode(channelsLoadFile)
         data.url = theFile.imageStore.webhookID.."/"..theFile.imageStore.webhookToken
-        return TriggerClientEvent('Prefech:JD_logsV3:ClientCreateScreenshot', data.player_id, data)
+        return TriggerClientEvent('fm-logs:client:getScreenshot', data.player_id, data)
     end
     if data.screenshot_2 then --[[ this log requires a second screenshot to be made so we will transfer to client to grab a screenshot. ]]
         local channelsLoadFile = LoadResourceFile(GetCurrentResourceName(), "./config/channels.json")
         local theFile = json.decode(channelsLoadFile)
         data.url = theFile.imageStore.webhookID.."/"..theFile.imageStore.webhookToken
-        return TriggerClientEvent('Prefech:JD_logsV3:ClientCreateScreenshot', data.player_2_id, data)
+        return TriggerClientEvent('fm-logs:client:getScreenshot', data.player_2_id, data)
     end
     newTitle = data.channel:gsub("^%l", string.upper) --[[ Format the title to the first word on upper case. ]]
     if not Channels[data.channel] or data.title then --[[ Check if the channel is in the channels.json and we make sure the user has not set a custom title. ]]
@@ -62,8 +62,7 @@ ServerFunc.CreateLog = function(data)
                     description = data.EmbedMessage,
                     color = ConvertColor(color),
                     footer = {
-                        text = "JD_logs V" .. GetResourceMetadata(GetCurrentResourceName(), 'version') .. "  •  Made by Prefech",
-                        icon_url = "https://prefech.com/assets/favicon/apple-touch-icon.png"
+                        text = "fm-logs V" .. GetResourceMetadata(GetCurrentResourceName(), 'version') .. "  •  Made by the fivemerr team",
                     },
                     timestamp = os.date("%Y-%m-%d") .. "T" ..os.date("%H:%M:%S") .. ".0000".. Config.TimezoneOffset
                 }
@@ -279,49 +278,49 @@ end
 function GetPlayerDetails(src, channel) --[[ Function to grab player details. ]]
     local ids = ServerFunc.ExtractIdentifiers(src)
     value = ""
-    if Config.playerId and GetResourceKvpString("JD_logs:"..channel:lower()..":playerid") ~= 'true' then
+    if Config.playerId and GetResourceKvpString("fm-logs:"..channel:lower()..":playerid") ~= 'true' then
         sid = src
         if channel == "join" then
             sid = "N/A"
         end
         value = value .. "\n`🔢` **Server ID:** `" .. sid .. "`"
     end
-    if Config.postals and GetResourceKvpString("JD_logs:"..channel:lower()..":postals") ~= 'true' then
+    if Config.postals and GetResourceKvpString("fm-logs:"..channel:lower()..":postals") ~= 'true' then
         value = value .. "\n`🗺️` **Nearest Postal:** `" .. GetPlayerPostal(src) .. "`"
     end
-    if Config.playerHealth and GetResourceKvpString("JD_logs:"..channel:lower()..":health") ~= 'true' then
+    if Config.playerHealth and GetResourceKvpString("fm-logs:"..channel:lower()..":health") ~= 'true' then
         value = value .. "\n`❤️` **Health:** `" .. math.floor(GetEntityHealth(GetPlayerPed(src)) / 2) .. "/100`"
     end
-    if Config.playerArmor and GetResourceKvpString("JD_logs:"..channel:lower()..":armor") ~= 'true' then
+    if Config.playerArmor and GetResourceKvpString("fm-logs:"..channel:lower()..":armor") ~= 'true' then
         value = value .. "\n`🛡️` **Armour:** `" .. math.floor(GetPedArmour(GetPlayerPed(src))) .. "/100`"
     end
-    if Config.discordId.enabled and GetResourceKvpString("JD_logs:"..channel:lower()..":discordid") ~= 'true' then
+    if Config.discordId.enabled and GetResourceKvpString("fm-logs:"..channel:lower()..":discordid") ~= 'true' then
         if Config.discordId.spoiler then
             value = value .. "\n`💬` **Discord:** <@" .. ids.discord:gsub("discord:", "") .."> (||" .. ids.discord:gsub("discord:", "") .. "||)"
         else
             value = value .. "\n`💬` **Discord:** <@" .. ids.discord:gsub("discord:", "") .."> (`" .. ids.discord:gsub("discord:", "") .. "`)"
         end
     end
-    if Config.ip and GetResourceKvpString("JD_logs:"..channel:lower()..":ip") ~= 'true' then
+    if Config.ip and GetResourceKvpString("fm-logs:"..channel:lower()..":ip") ~= 'true' then
         value = value .. "\n`🔗` **IP:** ||" .. ids.ip:gsub("ip:", "") .. "||"
     end
-    if Config.playerPing and GetResourceKvpString("JD_logs:"..channel:lower()..":ping") ~= 'true' then
+    if Config.playerPing and GetResourceKvpString("fm-logs:"..channel:lower()..":ping") ~= 'true' then
         value = value .. "\n`📶` **Ping:** `" .. GetPlayerPing(src) .. "ms`"
     end
-    if Config.steamId.enabled and GetResourceKvpString("JD_logs:"..channel:lower()..":steamid") ~= 'true' then
+    if Config.steamId.enabled and GetResourceKvpString("fm-logs:"..channel:lower()..":steamid") ~= 'true' then
         if Config.steamId.spoiler then
             value = value .. "\n`🎮` **Steam Hex:** ||" .. ids.steam .. "||"
         else
             value = value .. "\n`🎮` **Steam Hex:** `" .. ids.steam .. "`"
         end
     end
-    if Config.steamUrl and GetResourceKvpString("JD_logs:"..channel:lower()..":steamurl") ~= 'true' then
+    if Config.steamUrl and GetResourceKvpString("fm-logs:"..channel:lower()..":steamurl") ~= 'true' then
         if ids.steam and ids.steam ~= "N/A" then
             value = value .. " [`🔗` Steam Profile](https://steamcommunity.com/profiles/" ..tonumber(ids.steam:gsub("steam:", ""), 16)..")"
         end
     end
 
-    if Config.license.enabled and GetResourceKvpString("JD_logs:"..channel:lower()..":license") ~= 'true' then
+    if Config.license.enabled and GetResourceKvpString("fm-logs:"..channel:lower()..":license") ~= 'true' then
         if Config.license.spoiler then
             value = value .. "\n`💿` **License:** ||" .. ids.license .. "||"
             value = value .. "\n`📀` **License 2:** ||" .. ids.license2 .. "||"

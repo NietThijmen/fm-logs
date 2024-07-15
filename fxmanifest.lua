@@ -15,9 +15,8 @@
 
 version '3.1.3'
 author 'Prefech'
-description 'FXServer logs to Discord (https://prefech.com/)'
-repository 'https://github.com/prefech/JD_logsV3'
-
+description 'FXServer logs to Fivemerr)'
+repository 'https://github.com/FiveMerr/fm-logs'
 
 dependency 'yarn'
 dependency 'screenshot-basic'
